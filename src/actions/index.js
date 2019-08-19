@@ -1,6 +1,16 @@
 import jsonPlaceholder from '../apis/jsonPlaceholder';
+import _ from 'lodash'
 
-//definfing a function that returnts a function
+export const fetchPostsAndUsers = () => async (dispatch, getState )=> {
+  await dispatch(fetchPosts());
+   //console.log("getState",getState().posts)
+
+   const userId = _.uniq(_.map(getState().posts, 'userId'));
+   userId.forEach(id => dispatch(fetchUser(id)));
+   //async does not forEach
+};
+
+//definfing a function that returnts a function  i.e. fetchPosts = () => async dispatch => {}
 export const fetchPosts = () => async dispatch =>  {
   const response = await jsonPlaceholder.get('/posts');
 
@@ -12,28 +22,45 @@ export const fetchPosts = () => async dispatch =>  {
 
 
 
-export const fetchUser = function (id) {
-  return async function(dispatch){
-   const response = await jsonPlaceholder.get(`/users/${id}`);
- 
-  dispatch ({
-      type: 'FETCH_USER',
-      payload: response.data
-     });
-   }
- };
 
 
 
+export const fetchUser  = id => async dispatch  =>  {
+  const response = await jsonPlaceholder.get(`/users/${id}`);
 
-// export const fetchUser  = id => async dispatch  =>  {
+ dispatch ({
+     type: 'FETCH_USER',
+     payload: response.data
+    });
+};
+
+// This the final product of memoize.... The problems is that it can only fetch one time... so there is an udate to the api memoize will not fetch the new data
+//export const fetchUser  = id =>  dispatch  => _fetchUser(id, dispatch);
+// const _fetchUser= _.memoize(async (id, dispatch) => {
 //   const response = await jsonPlaceholder.get(`/users/${id}`);
+//   dispatch ({
+//           type: 'FETCH_USER',
+//           payload: response.data
+//          });
+// })
 
-//  dispatch ({
-//      type: 'FETCH_USER',
-//      payload: response.data
-//     });
-// };
+
+// This function dosent work
+// export const fetchUser =_.memoize( function (id) {
+//   return async function(dispatch){
+//    const response = await jsonPlaceholder.get(`/users/${id}`);
+ 
+//   dispatch ({
+//       type: 'FETCH_USER',
+//       payload: response.data
+//      });
+//    }
+//  });
+
+
+
+
+
 
 
 // We could use this as well... but we wont
